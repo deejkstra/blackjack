@@ -4,5 +4,5 @@ public enum GamePhase {
     START,
     PLAYER_TURN,
     DEALER_TURN,
-    END_GAME;
+    END_GAME
 }

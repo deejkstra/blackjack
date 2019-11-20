@@ -38,7 +38,7 @@ public class GameData {
      * post game
      *      winner
      */
-    public GameData() {
+    GameData() {
         this.gameId = UUID.randomUUID();
         playerData = new ArrayList<>();
         playerTokenMap = new HashMap<>();
@@ -102,21 +102,17 @@ public class GameData {
 
     public boolean isPlayersTurn(UUID playerId, UUID playerToken) {
         PlayerData currentPlayerData = playerData.get(currentPlayerTurnIndex);
-        if (!currentPlayerData.getPlayerId().equals(playerId)) {
-            return false;
+        if (currentPlayerData.getPlayerId().equals(playerId)) {
+            UUID token = playerTokenMap.get(currentPlayerData.getPlayerId());
+            return token.equals(playerToken);
         }
 
-        UUID token = playerTokenMap.get(currentPlayerData.getPlayerId());
-        if (!token.equals(playerToken)) {
-            return false;
-        }
-
-        return true;
+        return false;
     }
 
     public boolean isValidPlayer(UUID playerId, UUID playerToken) {
-        UUID token = playerTokenMap.getOrDefault(playerId, UUID.randomUUID());
-        return token.equals(playerToken);
+        UUID token = playerTokenMap.getOrDefault(playerId, null);
+        return Objects.nonNull(token) && token.equals(playerToken);
     }
 
     public void playerHit(UUID playerId, UUID playerToken) {
@@ -140,30 +136,25 @@ public class GameData {
         }
     }
 
+    /**
+     * gameId: <UUID />,
+     * versionId: <UUID />,
+     * state: {
+     *      currentPlayerTurn: playerId,
+     *      deck: { .. }, ? have to be careful with this data not return actual contents of deck.
+     *      dealer: { .. }, ? have to be careful not to send data about facedown card.
+     *      players: [ .. ],
+     *      isActive: bool
+     * }
+     *
+     * note: when isActive goes from true to false, the game will query a "/GameOutcome" API
+     * that surfaces the results of the game.
+     */
     public GameState getGameState() {
-        /**
-         * gameId: <UUID />,
-         * versionId: <UUID />,
-         * state: {
-         *      currentPlayerTurn: playerId,
-         *      deck: { .. }, ? have to be careful with this data not return actual contents of deck.
-         *      dealer: { .. }, ? have to be careful not to send data about facedown card.
-         *      players: [ .. ],
-         *      isActive: bool
-         * }
-         *
-         * note: when isActive goes from true to false, the game will query a "/GameOutcome" API
-         * that surfaces the results of the game.
-         */
-
         UUID currentPlayerId = playerData.get(currentPlayerTurnIndex).getPlayerId();
         int deckSize = gameDeck.getCardData().size();
-
         GameState gameState = new GameState(gameId, currentPlayerId, deckSize, dealer, playerData, gamePhase);
-
         versionId = gameState.getVersionId();
-
         return gameState;
     }
-
 }

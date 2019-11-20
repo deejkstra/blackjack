@@ -11,11 +11,8 @@ public class GameDeck extends CardStack {
             getCardData().clear();
         }
 
-        Arrays.stream(Suit.values()).forEach(s -> {
-            Arrays.stream(Value.values()).forEach(v -> {
-                this.push(new CardData(s, v));
-            });
-        });
+        Arrays.stream(Suit.values()).forEach(s ->
+                Arrays.stream(Value.values()).forEach(v -> this.push(new CardData(s, v))));
 
         shuffle();
     }

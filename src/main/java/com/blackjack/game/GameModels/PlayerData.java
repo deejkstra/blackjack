@@ -10,7 +10,7 @@ public class PlayerData {
     private final PlayerHand playerHand;
     private final UUID playerId;
 
-    public PlayerData() {
+    PlayerData() {
         this.playerHand = new PlayerHand();
         this.playerId = UUID.randomUUID();
     }

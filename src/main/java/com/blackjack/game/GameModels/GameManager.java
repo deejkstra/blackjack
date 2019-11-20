@@ -26,9 +26,7 @@ public class GameManager {
     }
 
     public void removeGame(UUID gameId) {
-        if (registeredGames.containsKey(gameId)) {
-            registeredGames.remove(gameId);
-        }
+        registeredGames.remove(gameId);
     }
 
     public Set<UUID> getGames() {

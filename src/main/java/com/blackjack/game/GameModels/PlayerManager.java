@@ -26,9 +26,7 @@ public class PlayerManager {
     }
 
     public void removePlayer(UUID playerId) {
-        if (registeredPlayers.containsKey(playerId)) {
-            registeredPlayers.remove(playerId);
-        }
+        registeredPlayers.remove(playerId);
     }
 
     public Set<UUID> getPlayers() {

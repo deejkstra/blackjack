@@ -11,7 +11,7 @@ import java.util.List;
 public abstract class CardStack {
     private final List<CardData> cardData = new ArrayList<>();
 
-    public void shuffle() {
+    void shuffle() {
         for (int i = cardData.size() - 1; i > 0; i--) {
             int newIndex = (int)(Math.random() * i);
 
