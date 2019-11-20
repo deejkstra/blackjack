@@ -24,9 +24,14 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+	compile group: 'com.google.guava', name: 'guava', version: '19.0'
+	compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
+
+	testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
 }
 
 test {
