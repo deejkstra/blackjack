@@ -3,10 +3,13 @@ package com.blackjack.game.GameModels;
 import com.blackjack.game.CardModels.CardData;
 import com.blackjack.game.CardModels.GameDeck;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 @Getter
+@Slf4j
 public class GameData {
     private static final int PLAYER_LIMIT = 6;
 
@@ -22,6 +25,8 @@ public class GameData {
     private int currentPlayerTurnIndex = 0;
 
     private String versionId;
+
+    private LinkedHashMap<String, GameState> gameHistory ;
 
     /**
      * initialize
@@ -43,6 +48,11 @@ public class GameData {
         playerData = new ArrayList<>();
         playerTokenMap = new HashMap<>();
         gamePhase = GamePhase.START;
+        gameDeck = new GameDeck();
+        dealer = new PlayerData();
+        gameHistory = new LinkedHashMap<>();
+
+        getGameState();
     }
 
     public UUID addPlayer(PlayerData playerData) {
@@ -62,26 +72,23 @@ public class GameData {
 
     public void start() {
         if (!GamePhase.START.equals(gamePhase)) {
+            log.warn("can't start game, game has already started.");
             return;
         }
 
         if (playerData.size() == 0) {
+            log.warn("can't start game, not enough players.");
             return;
         }
 
-        gameDeck = new GameDeck();
-        dealer = new PlayerData();
+        log.info("start player turn.");
 
-        playerData.forEach(playerData ->
-            playerData.getPlayerHand().push(gameDeck.pop()));
+        IntStream.range(0, 2).forEach(i -> {
+            playerData.forEach(playerData ->
+                    playerData.getPlayerHand().push(gameDeck.pop()));
 
-        CardData firstDealerCard = gameDeck.pop();
-        firstDealerCard.setVisible(false);
-        dealer.getPlayerHand().push(firstDealerCard);
-
-        playerData.forEach(playerData ->
-            playerData.getPlayerHand().push(gameDeck.pop()));
-        dealer.getPlayerHand().push(gameDeck.pop());
+            dealer.getPlayerHand().push(gameDeck.pop());
+        });
 
         gamePhase = GamePhase.PLAYER_TURN;
     }
@@ -111,6 +118,7 @@ public class GameData {
     }
 
     public boolean isValidPlayer(UUID playerId, UUID playerToken) {
+        System.out.println(playerTokenMap);
         UUID token = playerTokenMap.getOrDefault(playerId, null);
         return Objects.nonNull(token) && token.equals(playerToken);
     }
@@ -132,8 +140,19 @@ public class GameData {
         currentPlayerTurnIndex++;
 
         if (currentPlayerTurnIndex >= playerData.size()) {
-            gamePhase = GamePhase.DEALER_TURN;
+            dealersTurn();
         }
+    }
+
+    private void dealersTurn() {
+        log.info("starting dealer turn");
+        gamePhase = GamePhase.DEALER_TURN;
+
+        while(dealer.getPlayerHand().getScore() < 17) {
+            dealer.getPlayerHand().push(gameDeck.pop());
+        }
+
+        gamePhase = GamePhase.END_GAME;
     }
 
     /**
@@ -151,10 +170,15 @@ public class GameData {
      * that surfaces the results of the game.
      */
     public GameState getGameState() {
-        UUID currentPlayerId = playerData.get(currentPlayerTurnIndex).getPlayerId();
+        UUID currentPlayerId = null;
+        if (currentPlayerTurnIndex >= 0 && currentPlayerTurnIndex < playerData.size()) {
+            playerData.get(currentPlayerTurnIndex).getPlayerId();
+        }
         int deckSize = gameDeck.getCardData().size();
         GameState gameState = new GameState(gameId, currentPlayerId, deckSize, dealer, playerData, gamePhase);
         versionId = gameState.getVersionId();
+        System.out.println(gameState);
+        gameHistory.put(versionId, gameState);
         return gameState;
     }
 }

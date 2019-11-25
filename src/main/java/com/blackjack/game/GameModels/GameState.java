@@ -1,7 +1,10 @@
 package com.blackjack.game.GameModels;
 
+import com.google.common.hash.Hashing;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 import javax.annotation.PostConstruct;
 import javax.xml.bind.DatatypeConverter;
@@ -9,14 +12,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.UUID;
 
-@RequiredArgsConstructor
+@AllArgsConstructor
 @Getter
-public class GameState implements Serializable {
+@ToString
+public class GameState {
     private final UUID gameId;
     private final UUID currentPlayerId;
     private final int deckSize;
@@ -24,30 +29,10 @@ public class GameState implements Serializable {
     private final List<PlayerData> playerData;
     private final GamePhase gamePhase;
 
-    private String versionId;
-
-    @PostConstruct
-    void init() {
-        try {
-            this.versionId = getChecksum(this);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    private String getChecksum(Serializable object) throws IOException, NoSuchAlgorithmException {
-        ByteArrayOutputStream baos = null;
-        ObjectOutputStream oos = null;
-        try {
-            baos = new ByteArrayOutputStream();
-            oos = new ObjectOutputStream(baos);
-            oos.writeObject(object);
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] thedigest = md.digest(baos.toByteArray());
-            return DatatypeConverter.printHexBinary(thedigest);
-        } finally {
-            oos.close();
-            baos.close();
-        }
+    public String getVersionId() {
+        return Hashing
+                .md5()
+                .hashString(this.toString(), StandardCharsets.UTF_8)
+                .toString();
     }
 }
